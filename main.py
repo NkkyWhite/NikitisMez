@@ -10,12 +10,12 @@ Nvector = np.array([[1 / (3 ** 0.5), 1 / (3 ** 0.5), 1 / (3 ** 0.5)],[1 / (3 ** 
 # Матрицы 3*3
 Naprag0 = np.zeros((2, 3))
 SigmaP = np.zeros((2, 3))
-
+Sigm = np.zeros((3,3))
 
 # Nach
 GradSkorosti = np.zeros(k)
-#T = np.zeros(k + 1)
-T = 0.
+T = np.zeros(k + 1)
+
 Tkrit = 17.5
 YskorostSdviga0 = 0.00001
 deltT = 1
@@ -44,16 +44,31 @@ P[0, 1, 0, 1] = P[1, 0, 0, 1] = P[1, 0, 1, 0] = P[0, 1, 1, 0] = P[0, 2, 0, 2] = 
 # print("Элемент P1111 = ", P[0, 0, 0, 0])
 # print("Элемент P2111 = ", P[1, 0, 0, 0])
 # print(P)
-
-for deltT in range(1, t+1):
-    for p in range(1, 100):
-            if Tkrit >= T:
-                GradSkorosti = 0
-            if Tkrit < T:
-                GradSkorosti = YskorostSdviga0 * ((T / Tkrit) ** (1 / m))
-    EP = np.dot(GradSkorosti, np.dot(Nvector,Bvector))
-    deltE = E-EP
+EP = 0
+# print("Элемент P1111 = ", P[0, 0, 0, 0])
+# print("Элемент P2111 = ", P[1, 0, 0, 0])
+# print(P)
+deltE = E
+ASigm = []
+BEp = []
+for deltT in range(1, t+100):
     SigmaP = np.tensordot(P, deltE, axes=2)
-    print(SigmaP)
+    Sigm = Sigm + SigmaP
+    BEp.append(Sigm)
+    for p in range(1, k):
+        T[p] = np.tensordot(np.tensordot(Bvector[p],Nvector[p], axes=0),Sigm)
+        if Tkrit >= T[p]:
+            GradSkorosti = 0
+        if Tkrit < T[p]:
+            GradSkorosti = YskorostSdviga0 * ((T / Tkrit) ** (1 / m))
+        EP += GradSkorosti*np.tensordot(Bvector[p],Nvector[p],axes=0)
+
+    ASigm.append(EP)
+    deltE = E-EP
+
+    #SigmaP = np.tensordot(P, deltE, axes=2)
+    #print(Sigm)
+print(Sigm)
+
 
 

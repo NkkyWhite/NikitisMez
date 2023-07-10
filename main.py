@@ -1,5 +1,5 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
 # системы скольжения
 k = 24
 Bvector = np.array([[1 / (2 ** 0.5), 0, -1 / (2 ** 0.5)],[0, 1 / (2 ** 0.5), -1 / (2 ** 0.5)],[1 / (2 ** 0.5), -1 / (2 ** 0.5), 0],[1 / (2 ** 0.5), 1 / (2 ** 0.5), 0],[1 / (2 ** 0.5), 0, 1 / (2 ** 0.5)],[0, 1 / (2 ** 0.5), -1 / (2 ** 0.5)],[1 / (2 ** 0.5), 1 / (2 ** 0.5), 0],[0, 1 / (2 ** 0.5), 1 / (2 ** 0.5)],[0, 1 / (2 ** 0.5), -1 / (2 ** 0.5)],[1 / (2 ** 0.5), 0, 1 / (2 ** 0.5)],[1 / (2 ** 0.5), -1 / (2 ** 0.5), 0],[0, 1 / (2 ** 0.5), 1 / (2 ** 0.5)],[-1 / (2 ** 0.5), 0, 1 / (2 ** 0.5)],[0, -1 / (2 ** 0.5), 1 / (2 ** 0.5)],[-1 / (2 ** 0.5), 1 / (2 ** 0.5), 0],[-1 / (2 ** 0.5), -1 / (2 ** 0.5), 0],[-1 / (2 ** 0.5), 0, -1 / (2 ** 0.5)],[0, -1 / (2 ** 0.5), 1 / (2 ** 0.5)],[-1 / (2 ** 0.5), -1 / (2 ** 0.5), 0],[0, -1 / (2 ** 0.5), -1 / (2 ** 0.5)],[-1 / (2 ** 0.5), 0, 1 / (2 ** 0.5)],[-1 / (2 ** 0.5), 0, -1 / (2 ** 0.5)],[-1 / (2 ** 0.5), 1 / (2 ** 0.5), 0],[0, -1 / (2 ** 0.5), -1 / (2 ** 0.5)]])
@@ -51,19 +51,19 @@ EP = 0
 deltE = E
 IntSigm = []
 IntE = []
-for deltT in range(1, 1000):
+for deltT in range(1, 100000):
     SigmaP = np.tensordot(P, deltE, axes=2)
-    Sigm = Sigm + SigmaP*0.001
+    Sigm = Sigm + SigmaP*0.00001
     IntSigm.append(((2/3)*(np.tensordot(Sigm, Sigm, axes=2)))**(1/2))
     for p in range(1, k):
         T[p] = np.tensordot(np.tensordot(Bvector[p], Nvector[p], axes=0), Sigm)
         if Tkrit >= T[p]:
             GradSkorosti = 0
         if Tkrit < T[p]:
-            GradSkorosti = YskorostSdviga0 * ((T / Tkrit) ** (1 / m))
+            GradSkorosti = YskorostSdviga0 * ((T[p] / Tkrit) ** (1 / m))
         EP += GradSkorosti*np.tensordot(Bvector[p], Nvector[p], axes=0)
-        Epsi = Epsi + E * 0.001
-        IntE.append(((2 / 3) * (np.tensordot(Epsi, Epsi, axes=2))) ** (1 / 2))
+    Epsi = Epsi + E * 0.00001
+    IntE.append(((2 / 3) * (np.tensordot(Epsi, Epsi, axes=2))) ** (1 / 2))
 
     deltE = E-EP
 
@@ -73,4 +73,13 @@ for deltT in range(1, 1000):
 
 print(IntSigm)
 print(IntE)
+with open("IntSigm.txt", "a") as file:
+    file.write(f"\n {IntSigm} ")
+with open("IntE.txt", "a") as file:
+    file.write(f"\n {IntE} ")
 
+
+fig, ax = plt.subplots()
+ax.set_title('График')
+ax.plot(IntE,IntSigm )
+plt.show()

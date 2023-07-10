@@ -11,7 +11,7 @@ Nvector = np.array([[1 / (3 ** 0.5), 1 / (3 ** 0.5), 1 / (3 ** 0.5)],[1 / (3 ** 
 Naprag0 = np.zeros((2, 3))
 SigmaP = np.zeros((2, 3))
 Sigm = np.zeros((3,3))
-
+Epsi = np.zeros((3,3))
 # Nach
 GradSkorosti = np.zeros(k)
 T = np.zeros(k + 1)
@@ -49,26 +49,28 @@ EP = 0
 # print("Элемент P2111 = ", P[1, 0, 0, 0])
 # print(P)
 deltE = E
-ASigm = []
-BEp = []
-for deltT in range(1, t+100):
+IntSigm = []
+IntE = []
+for deltT in range(1, 1000):
     SigmaP = np.tensordot(P, deltE, axes=2)
-    Sigm = Sigm + SigmaP
-    BEp.append(Sigm)
+    Sigm = Sigm + SigmaP*0.001
+    IntSigm.append(((2/3)*(np.tensordot(Sigm, Sigm, axes=2)))**(1/2))
     for p in range(1, k):
-        T[p] = np.tensordot(np.tensordot(Bvector[p],Nvector[p], axes=0),Sigm)
+        T[p] = np.tensordot(np.tensordot(Bvector[p], Nvector[p], axes=0), Sigm)
         if Tkrit >= T[p]:
             GradSkorosti = 0
         if Tkrit < T[p]:
             GradSkorosti = YskorostSdviga0 * ((T / Tkrit) ** (1 / m))
-        EP += GradSkorosti*np.tensordot(Bvector[p],Nvector[p],axes=0)
+        EP += GradSkorosti*np.tensordot(Bvector[p], Nvector[p], axes=0)
+        Epsi = Epsi + E * 0.001
+        IntE.append(((2 / 3) * (np.tensordot(Epsi, Epsi, axes=2))) ** (1 / 2))
 
-    ASigm.append(EP)
     deltE = E-EP
+
 
     #SigmaP = np.tensordot(P, deltE, axes=2)
     #print(Sigm)
-print(Sigm)
 
-
+print(IntSigm)
+print(IntE)
 

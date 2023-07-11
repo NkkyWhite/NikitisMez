@@ -8,16 +8,15 @@ Nvector = np.array([[1 / (3 ** 0.5), 1 / (3 ** 0.5), 1 / (3 ** 0.5)],[1 / (3 ** 
 #Nvector = np.array([1 / (3 ** 0.5), 1 / (3 ** 0.5), 1 / (3 ** 0.5)])
 
 # Матрицы 3*3
-Naprag0 = np.zeros((2, 3))
-SigmaP = np.zeros((2, 3))
+SigmaP = np.zeros((3, 3))
 Sigm = np.zeros((3,3))
 Epsi = np.zeros((3,3))
 # Nach
 GradSkorosti = np.zeros(k)
 T = np.zeros(k + 1)
 
-Tkrit = 17.5
-YskorostSdviga0 = 0.00001
+Tkrit = 17.5*10**4
+YskorostSdviga0 = 0.001
 deltT = 1
 m = 86
 t = 4
@@ -37,9 +36,9 @@ E = np.array([[0, E12, 0], [E21, 0, 0], [0, 0, 0]])
 # Тензор упругих свойств
 P = np.zeros((3, 3, 3, 3))
 # print(P.ndim)
-P[0, 0, 0, 0] = P[1, 1, 1, 1] = P[2, 2, 2, 2] = 168.4
-P[0, 0, 1, 1] = P[1, 1, 0, 0] = P[2, 2, 0, 0] = P[0, 0, 2, 2] = P[1, 1, 2, 2] = P[2, 2, 1, 1] = 121.4
-P[0, 1, 0, 1] = P[1, 0, 0, 1] = P[1, 0, 1, 0] = P[0, 1, 1, 0] = P[0, 2, 0, 2] = P[2, 0, 0, 2] = P[2, 0, 2, 0] = P[0, 2, 2, 0] = P[2, 1, 2, 1] = P[2, 1, 1, 2] = P[1, 2, 1, 2] = P[1, 2, 2, 1] = 75.4
+P[0, 0, 0, 0] = P[1, 1, 1, 1] = P[2, 2, 2, 2] = 168.4*10**9
+P[0, 0, 1, 1] = P[1, 1, 0, 0] = P[2, 2, 0, 0] = P[0, 0, 2, 2] = P[1, 1, 2, 2] = P[2, 2, 1, 1] = 121.4*10**9
+P[0, 1, 0, 1] = P[1, 0, 0, 1] = P[1, 0, 1, 0] = P[0, 1, 1, 0] = P[0, 2, 0, 2] = P[2, 0, 0, 2] = P[2, 0, 2, 0] = P[0, 2, 2, 0] = P[2, 1, 2, 1] = P[2, 1, 1, 2] = P[1, 2, 1, 2] = P[1, 2, 2, 1] = 75.4*10**9
 
 # print("Элемент P1111 = ", P[0, 0, 0, 0])
 # print("Элемент P2111 = ", P[1, 0, 0, 0])
@@ -51,10 +50,11 @@ EP = 0
 deltE = E
 IntSigm = []
 IntE = []
-for deltT in range(1, 100000):
+for deltT in range(1, 1000):
     SigmaP = np.tensordot(P, deltE, axes=2)
-    Sigm = Sigm + SigmaP*0.00001
+    Sigm = Sigm + SigmaP*0.001
     IntSigm.append(((2/3)*(np.tensordot(Sigm, Sigm, axes=2)))**(1/2))
+    EP = 0
     for p in range(1, k):
         T[p] = np.tensordot(np.tensordot(Bvector[p], Nvector[p], axes=0), Sigm)
         if Tkrit >= T[p]:
@@ -62,7 +62,7 @@ for deltT in range(1, 100000):
         if Tkrit < T[p]:
             GradSkorosti = YskorostSdviga0 * ((T[p] / Tkrit) ** (1 / m))
         EP += GradSkorosti*np.tensordot(Bvector[p], Nvector[p], axes=0)
-    Epsi = Epsi + E * 0.00001
+    Epsi = Epsi + E * 0.001
     IntE.append(((2 / 3) * (np.tensordot(Epsi, Epsi, axes=2))) ** (1 / 2))
 
     deltE = E-EP
